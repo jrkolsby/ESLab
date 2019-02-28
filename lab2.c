@@ -228,7 +228,7 @@ void send_to_server(char *buf) {
 void *network_thread_f(void *ignored)
 {
   char recvBuf[BUFFER_SIZE];
-  char **printBuf = malloc(sizeof(char)*64*21);
+  char printBuf[21][64];
   int n;
 
   /* Receive data */
