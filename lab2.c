@@ -41,10 +41,18 @@ pthread_t network_thread;
 void *network_thread_f(void *);
 
 
-
+int x,y;
 int outrow = 19;
 int outcol = 0;
 char display[20][64];
+
+for (x = 0; x < 20; x++) {
+  for (y = 0; y < 64; y++) {
+    display[x][y] = ' ';
+  }
+}
+
+
 //--------------------------------------------
 
 void fbprint(char msg[2][64]) {
@@ -78,6 +86,13 @@ int main()
   int err, col;
 
   char message[2][64];
+
+  for (x = 0; x < 2; x++) {
+    for (y = 0; y < 64; y++) {
+      message[x][y] = ' ';
+    }
+  }
+
   int inrow = 22;
   int incol = 0;
   int startfix = 0;
