@@ -40,16 +40,46 @@ uint8_t endpoint_address;
 pthread_t network_thread;
 void *network_thread_f(void *);
 
+
+
+int outrow = 19;
+int outcol = 0;
+char display[20][64];
+//--------------------------------------------
+
+void fbprint(char msg[2][64]) {
+
+    int r,c;
+
+    for (r = 0; r < 18; r++) {
+      for (c = 0; c < 64; c++) {
+	display[r][c] = display[r+2][c];
+      }
+    }
+
+    for (r = 18; r < 20; r++) {
+      for (c = 0; c < 64; c++) {
+	display[r][c] = msg[r-18][c];
+      }
+    }
+
+    for (r = 0; r < 20; r++) {
+      for (c = 0; c < 64; c++){
+	fbputchar(display[r][c], r+1, c);
+      }
+    }
+  }
+
+//--------------------------------------------
+
+
 int main()
 {
   int err, col;
 
-  char input[2][64];
-  char display[21][64];
+  char message[2][64];
   int inrow = 22;
-  int outrow = 1;
   int incol = 0;
-  int outcol = 0;
   int startfix = 0;
 
   struct sockaddr_in serv_addr;
@@ -83,7 +113,6 @@ int main()
     fbputchar('-', 0, col);
   }
   fbputchar('_', 22, 0);
-
 
 //--------------------------------------------------------------------
 
@@ -142,6 +171,19 @@ int main()
 
       if (packet.keycode[0] == 0x28) { //Enter
         int r, c;
+
+	fbprint(message);
+
+	//
+	//SEND TO SERVER ALSO
+	//
+
+	for (c = 0; c < 64; c++) {
+	  for (r = 0; r < 2; r++) {
+	    message[r][c] = ' ';
+	  }
+	}
+
         for (r = 22; r < 24; r++) {
 	  for (c = 0; c < 64; c++) {
 	    fbputchar(' ', r, c);
@@ -162,11 +204,17 @@ int main()
 
       if (in != '\0') {
         if (incol < 63) {
+	  
+	  message[inrow-22][incol] = in;
+
 	  fbputchar(in, inrow, incol);
           fbputchar('_', inrow, incol + 1);
 	  incol++;
         }
         else if ((incol == 63) & (inrow == 22)){
+	  
+	  message[0][63] = in;
+
 	  fbputchar(in, 22, 63);
 	  fbputchar('_', 23, 0);
 	  incol = 0;
