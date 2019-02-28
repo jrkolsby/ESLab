@@ -5,15 +5,16 @@
  * Jeremy Adkins ja3072
  * James Kolsby jrk2181
  */
-#include "fbputchar.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "usbkeyboard.h"
 #include <pthread.h>
+
+#include "fbputchar.h"
+#include "usbkeyboard.h"
 
 /* Update SERVER_HOST to be the IP address of
  * the chat server you are connecting to
@@ -41,6 +42,7 @@ pthread_t network_thread;
 void *network_thread_f(void *);
 
 
+<<<<<<< HEAD
 int x,y;
 int outrow = 19;
 int outcol = 0;
@@ -52,8 +54,9 @@ for (x = 0; x < 20; x++) {
   }
 }
 
-
-//--------------------------------------------
+int outrow = 19;
+int outcol = 0;
+char display[20][64];
 
 void fbprint(char msg[2][64]) {
 
@@ -77,8 +80,6 @@ void fbprint(char msg[2][64]) {
       }
     }
   }
-
-//--------------------------------------------
 
 
 int main()
@@ -108,16 +109,6 @@ int main()
     exit(1);
   }
 
-  /* Draw rows of asterisks across the top and bottom of the screen */
-  /*
-  for (col = 0 ; col < 64 ; col++) {
-    fbputchar('*', 0, col);
-    fbputchar('*', 23, col);
-  }
-
-  fbputs("Hello CSEE 4840 World!", 4, 10);
-  */
-
 //--------------------------------------------------------------------
 
   fbclear();
@@ -137,9 +128,6 @@ int main()
     exit(1);
   }
    
-
-
-  /* 
   // Create a TCP communications socket
   if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
     fprintf(stderr, "Error: Could not create socket\n");
@@ -163,11 +151,6 @@ int main()
 
   // Start the network thread 
   pthread_create(&network_thread, NULL, network_thread_f, NULL);
-  */
-
-
-
-
 
   /* Look for and handle keypresses */
   for (;;) {
@@ -241,9 +224,6 @@ int main()
     }
   }
 
-
-
-  /*
   // Terminate the network thread
   pthread_cancel(network_thread);
 
@@ -251,22 +231,32 @@ int main()
   pthread_join(network_thread, NULL);
 
   return 0;
-  */
+}
 
-
-
+void send_to_server(char *buf) {
+    int n;
+    if (n = write(sockfd, buf, BUFFER_SIZE - 1) > 0) {
+	printf("sent: %s", buf);
+    }
 }
 
 void *network_thread_f(void *ignored)
 {
   char recvBuf[BUFFER_SIZE];
+  char printBuf[21][64];
   int n;
+
   /* Receive data */
   while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
     recvBuf[n] = '\0';
     printf("%s", recvBuf);
     fbputs(recvBuf, 8, 0);
   }
+  
+  strncpy(printBuf[0], recvBuf, BUFFER_SIZE/2);
+  strncpy(printBuf[2], recvBuf, BUFFER_SIZE/2);
+  
+  fbprint(printBuf);
 
   return NULL;
 }
