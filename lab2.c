@@ -266,25 +266,21 @@ void *network_thread_f(void *ignored)
 
   /* Receive data */
   while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
-    recvBuf[n] = '\0';
-    printf("recvBuf %s", recvBuf);
 
-  }
-  
-  i = 0;
-  for (x = 0; x < 2; x++) {
-    for (y = 0; y < 64; y++) {
-      printBuf[x][y] = recvBuf[i];
-      fbputchar(recvBuf[i], x + 3, y);
-      i++;
+    i = 0;
+    for (x = 0; x < 2; x++) {
+      for (y = 0; y < 64; y++) {
+        printBuf[x][y] = recvBuf[i];
+	if (i == n-1) 
+	  goto end_loop;
+        i++;
+      }
     }
-  }
-  /*
-  strncpy(printBuf[0], recvBuf, BUFFER_SIZE/2);
-  strncpy(printBuf[1], recvBuf, BUFFER_SIZE/2);
-  */
+end_loop:
 
-  fbprint(printBuf);
+    fbprint(printBuf);
+
+  }
 
   return NULL;
 }
