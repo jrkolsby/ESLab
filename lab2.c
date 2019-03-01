@@ -208,9 +208,26 @@ int main()
 	incol = 0;
 	inrow = 22;
 	startfix = 0;
-
-
       }      
+
+      if (packet.keycode[0] == 0x2a) { //Bksp
+	if ((inrow == 23) & (incol == 0)) { 
+          message[1][0] = ' ';
+	  message[0][63] = '_';
+	  fbputchar(' ', 23, 0);
+	  fbputchar('_', 22, 63);
+          inrow = 22;
+          incol = 63;
+	}
+        else if (incol >  0) {
+	  message[inrow-22][incol] = ' ';
+	  message[inrow-22][incol-1] = '_';
+	  fbputchar(' ', inrow, incol);
+	  fbputchar('_', inrow, incol-1);
+	  incol--;
+        }
+	goto bksp_skip;
+      }
 
       if (startfix == 0) {
 	incol = 0;
@@ -238,8 +255,8 @@ int main()
 	  inrow = 23;
         }
       }
-
       fbputchar(getkey(keystate), 0, 54);
+bksp_skip:;
     }
   }
 
@@ -279,7 +296,12 @@ void *network_thread_f(void *ignored)
 end_loop:
 
     fbprint(printBuf);
-
+    
+    for (x = 0; x < 2; x++) {
+      for (y = 0; y < 64; y++) {
+        printBuf[x][y] = ' ';
+      }
+    }
   }
 
   return NULL;
