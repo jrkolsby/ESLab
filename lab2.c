@@ -40,23 +40,14 @@ uint8_t endpoint_address;
 
 pthread_t network_thread;
 void *network_thread_f(void *);
+void send_to_server(char *buf);
 
 
-<<<<<<< HEAD
 int x,y;
 int outrow = 19;
 int outcol = 0;
 char display[20][64];
-
-for (x = 0; x < 20; x++) {
-  for (y = 0; y < 64; y++) {
-    display[x][y] = ' ';
-  }
-}
-
-int outrow = 19;
-int outcol = 0;
-char display[20][64];
+char printBuf[2][64];
 
 void fbprint(char msg[2][64]) {
 
@@ -79,6 +70,7 @@ void fbprint(char msg[2][64]) {
 	fbputchar(display[r][c], r+1, c);
       }
     }
+
   }
 
 
@@ -88,11 +80,30 @@ int main()
 
   char message[2][64];
 
+/*
+  char foo[2][64];
+  for (int j = 0; j < 2; j++) {
+	for (int k = 0; k < 64; k++) {
+		foo[j][k] = ' ';
+	}
+  }
+
+  foo[0][0] = 'F';
+*/
+
+  for (x = 0; x < 20; x++) {
+    for (y = 0; y < 64; y++) {
+      display[x][y] = ' ';
+    }
+  }
+
   for (x = 0; x < 2; x++) {
     for (y = 0; y < 64; y++) {
       message[x][y] = ' ';
+      printBuf[x][y] = ' ';
     }
   }
+
 
   int inrow = 22;
   int incol = 0;
@@ -108,6 +119,8 @@ int main()
     fprintf(stderr, "Error: Could not open framebuffer: %d\n", err);
     exit(1);
   }
+
+  //fbprint(foo);
 
 //--------------------------------------------------------------------
 
@@ -170,11 +183,14 @@ int main()
       if (packet.keycode[0] == 0x28) { //Enter
         int r, c;
 
+	char message_out[BUFFER_SIZE];
+
 	fbprint(message);
 
-	//
-	//SEND TO SERVER ALSO
-	//
+	strncpy(message_out, message[0], BUFFER_SIZE/2);
+	strncpy(message_out+BUFFER_SIZE/2, message[1], BUFFER_SIZE/2);
+
+	send_to_server(message_out);
 
 	for (c = 0; c < 64; c++) {
 	  for (r = 0; r < 2; r++) {
@@ -187,10 +203,13 @@ int main()
 	    fbputchar(' ', r, c);
 	  }
         }
+
         fbputchar('_', 22, 0);
 	incol = 0;
 	inrow = 22;
 	startfix = 0;
+
+
       }      
 
       if (startfix == 0) {
@@ -235,7 +254,7 @@ int main()
 
 void send_to_server(char *buf) {
     int n;
-    if (n = write(sockfd, buf, BUFFER_SIZE - 1) > 0) {
+    if ((n = write(sockfd, buf, BUFFER_SIZE - 1)) > 0) {
 	printf("sent: %s", buf);
     }
 }
@@ -243,19 +262,28 @@ void send_to_server(char *buf) {
 void *network_thread_f(void *ignored)
 {
   char recvBuf[BUFFER_SIZE];
-  char printBuf[21][64];
-  int n;
+  int n, x, y, i;
 
   /* Receive data */
   while ( (n = read(sockfd, &recvBuf, BUFFER_SIZE - 1)) > 0 ) {
     recvBuf[n] = '\0';
-    printf("%s", recvBuf);
-    fbputs(recvBuf, 8, 0);
+    printf("recvBuf %s", recvBuf);
+
   }
   
+  i = 0;
+  for (x = 0; x < 2; x++) {
+    for (y = 0; y < 64; y++) {
+      printBuf[x][y] = recvBuf[i];
+      fbputchar(recvBuf[i], x + 3, y);
+      i++;
+    }
+  }
+  /*
   strncpy(printBuf[0], recvBuf, BUFFER_SIZE/2);
-  strncpy(printBuf[2], recvBuf, BUFFER_SIZE/2);
-  
+  strncpy(printBuf[1], recvBuf, BUFFER_SIZE/2);
+  */
+
   fbprint(printBuf);
 
   return NULL;
