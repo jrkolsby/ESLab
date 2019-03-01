@@ -48,6 +48,7 @@ int outrow = 19;
 int outcol = 0;
 char display[20][64];
 char printBuf[2][64];
+char lastchar;
 
 void fbprint(char msg[2][64]) {
 
@@ -176,7 +177,7 @@ int main()
       printf("%s\n", keystate);
       fbputs(keystate, 0, 56);
       if (packet.keycode[0] == 0x29) { /* ESC pressed? */
-	//fbclear();
+	fbclear();
 	break;
       }
 
@@ -236,7 +237,7 @@ int main()
 
       char in = getkey(keystate);
 
-      if (in != '\0') {
+      if ((in != '\0') & (in != lastchar)) {
         if (incol < 63) {
 	  
 	  message[inrow-22][incol] = in;
@@ -255,6 +256,7 @@ int main()
 	  inrow = 23;
         }
       }
+      lastchar = in;
       fbputchar(getkey(keystate), 0, 54);
 bksp_skip:;
     }
